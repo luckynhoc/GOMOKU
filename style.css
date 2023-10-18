@@ -11,21 +11,21 @@ body {
   height: 100vh;
 }
 .container {
-  width: 606px;
-  height: 606px;
+  width: 646px;
+  height: 646px;
   background-color: aqua;
 }
 .board {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  grid-template-rows: repeat(8, 1fr);
+  grid-template-columns: repeat(16, 1fr);
+  grid-template-rows: repeat(16, 1fr);
   border: 3px solid black;
 }
 .cell {
   background-color: darkgreen;
   border: 1px solid black;
-  height: 75px;
-  width: 75px;
+  height: 40px;
+  width: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -41,4 +41,7 @@ body {
   height: 80%;
   background-color: black;
   border-radius: 50%;
+}
+.yel {
+  background-color: yellow;
 }

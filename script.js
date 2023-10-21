@@ -40,7 +40,7 @@ const getRange = function (id) {
   let _minY = y - 4 > 0 ? y - 4 : 0;
   let _maxY = y + 4 < boardSize ? y + 4 : boardSize - 1;
 
-  //get arrays of chess to check, horizon, vertical, topdowncross, downtopcross
+  // get arrays of chess to check, horizon, vertical, topdowncross, downtopcross
   let horizon = [];
   let vertical = [];
   let topdownCross = [];
@@ -49,47 +49,29 @@ const getRange = function (id) {
   console.log("x ", _minX, _maxX);
   console.log("y ", _minY, _maxY);
 
-  //horizon, same y, x from min to max
+  //NOTE: horizon, same y, x from min to max
   for (let i = _minX; i <= _maxX; i++) {
-    // let _x = i <= 9 ? `0${i}` : i.toString()
-    // let _y = y <= 9 ? `0${y}` : y.toString();
-
     horizon.push(createID(i, y));
   }
-  // return horizon;
 
   for (let i = _minY; i <= _maxY; i++) {
     vertical.push(createID(x, i));
   }
-  // return vertical;
 
-  ////topdown cross
   let tempminus = [];
   let tempadd = [];
   let minus = 0;
   let add = 0;
-  //FIXME:
-  if (x === y && x === 0) {
-    tempminus = [];
-  } else if (x <= y) {
-    minus = x - _minX;
-    for (let i = minus; i > 0; i--) tempminus.push(createID(x - i, y - i));
-  } else {
-    minus = y - _minY;
-    for (let i = minus; i > 0; i--) tempminus.push(createID(x - i, y - i));
-  }
 
-  if (_maxX < _maxY) {
-    add = _maxY - y;
-    for (let i = 1; i <= add; i++) tempadd.push(createID(x + i, y + i));
-  } else {
-    add = _maxX - x;
-    for (let i = 1; i <= add; i++) tempadd.push(createID(x + i, y + i));
-  }
-  // FIXME:
+  //NOTE: TOP DOWN CROSS
+  minus = x - _minX < y - _minY ? x - _minX : y - _minY;
+  for (let i = minus; i > 0; i--) tempminus.push(createID(x - i, y - i));
+  add = _maxX - x < _maxY - y ? _maxX - x : _maxY - y;
+  for (let i = 1; i <= add; i++) tempadd.push(createID(x + i, y + i));
+
   topdownCross = [...tempminus, createID(x, y), ...tempadd];
 
-  ////downto top, right - left
+  ////NOTE: downto top, right - left
   tempminus = [];
   tempadd = [];
   minus = 0;
@@ -106,6 +88,7 @@ const getRange = function (id) {
   return linesCheck;
 };
 
+//NOTE:
 const highlight = function (id) {
   let arr = getRange(id);
   for (let i = 0; i < arr.length; i++) {
@@ -117,10 +100,48 @@ const highlight = function (id) {
   }
 };
 
+//NOTE:
 const createID = function (x, y) {
   let _x = x <= 9 ? "0" + x : String(x);
   let _y = y <= 9 ? "0" + y : String(y);
   return [_x, _y];
+};
+
+//NOTE:
+const checkWin = function (id, chess) {
+  let count = 0;
+  let mark = [];
+
+  //NOTE:Lay 1 mang gom cac hang can check - get arrays of horizon, vetical, cross from the chess
+  let linesCheck = getRange(id);
+  // let h = linesCheck[3];
+  // kiem tra moi hang - check for each rows
+  for (let row of linesCheck) {
+    // neu so co lien nhau nho hon 5 -- if number of continues chess below 5
+    if (count < 5) {
+      for (let cell of row) {
+        let x = Number(cell[0]);
+        let y = Number(cell[1]);
+        //if cell has value as check -- kiem tra trong board co giong voi quan can checkk khong
+        //TODO: neu dung, count tang, them cell vao mang danh dau
+        // if true, count++, add cell to mark array
+        if (board[y][x] === chess) {
+          count++;
+          mark.push(cell);
+          //if count = 5, win, break
+          if (count === 5) {
+            // NOTE: just hightlight mark to debug, maybe chage to show WinnerNOTE:
+            for (let m of mark)
+              document.querySelector(`#i${m[0]}${m[1]}`).classList.add("yel");
+            break;
+          }
+        } else {
+          count = 0;
+          mark = [];
+        }
+      }
+    }
+  }
 };
 
 for (let y = 0; y < boardSize; y++) {
@@ -138,16 +159,19 @@ for (let y = 0; y < boardSize; y++) {
         let _value = playerBlack ? "b" : "w";
         let _class = playerBlack ? "black" : "white";
 
-        // if (playerBlack) piece.classList.add("black");
-        // else piece.classList.add("white");
+        //NOTE: ADD CHESS
         _piece.classList.add(`${_class}`);
         _piece.classList.add(`${_id}`);
         _piece.classList.add("locked");
         board[y][x] = _value;
+        // console.log(_id);
+        checkWin(`${_id[0]}${_id[1]}`, _value);
 
+        //NOTE: SWITCH PLAYER
         playerBlack = !playerBlack;
+
         e.target.appendChild(_piece);
-        highlight(`${createID(x, y)[0]}${createID(x, y)[1]}`);
+        // highlight(`${createID(x, y)[0]}${createID(x, y)[1]}`);
       }
     });
 

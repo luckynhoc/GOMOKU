@@ -45,3 +45,51 @@ body {
 .yel {
   background-color: yellow;
 }
+.container__modal {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal__overlay {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.hidden {
+  display: none;
+}
+
+.modal__body {
+  background-color: white;
+  height: 30%;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5%;
+  z-index: 1;
+}
+.modal__body .modal__title {
+  font-size: 2.3rem;
+  margin-bottom: 30px;
+  font-family: sans-serif;
+}
+#again {
+  height: 80px;
+  width: 150px;
+  font-size: 2rem;
+  font-weight: 700;
+  border: 5px solid black;
+  border-radius: 40px;
+  background-color: yellow;
+  color: red;
+}

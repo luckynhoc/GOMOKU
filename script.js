@@ -1,27 +1,15 @@
 "use strict";
 
-// let board = [
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-//   ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
-// ];
 let board;
 const boardSize = 16;
 let boardElement = document.querySelector(".board");
 let playerBlack = true;
+let winner;
+let gameEnded = false;
+let btnAgain = document.querySelector("#again");
+let modalOverlay = document.querySelector(".modal__overlay");
+let modalContainer = document.querySelector(".container__modal");
+let winnerTitle = document.querySelector(".modal__title");
 
 const createBoard = function (_size) {
   let x = Array(_size).fill("");
@@ -29,12 +17,10 @@ const createBoard = function (_size) {
   return [...x];
 };
 
-board = createBoard(boardSize);
-
 const getRange = function (id) {
   let x = Number(id.slice(0, 2));
   let y = Number(id.slice(2));
-  console.log(x, y);
+  // console.log(x, y);
   let _minX = x - 4 > 0 ? x - 4 : 0;
   let _maxX = x + 4 < boardSize ? x + 4 : boardSize - 1;
   let _minY = y - 4 > 0 ? y - 4 : 0;
@@ -46,8 +32,8 @@ const getRange = function (id) {
   let topdownCross = [];
   let downtopcross = [];
 
-  console.log("x ", _minX, _maxX);
-  console.log("y ", _minY, _maxY);
+  // console.log("x ", _minX, _maxX);
+  // console.log("y ", _minY, _maxY);
 
   //NOTE: horizon, same y, x from min to max
   for (let i = _minX; i <= _maxX; i++) {
@@ -131,8 +117,13 @@ const checkWin = function (id, chess) {
           //if count = 5, win, break
           if (count === 5) {
             // NOTE: just hightlight mark to debug, maybe chage to show WinnerNOTE:
+            let winner = chess === "b" ? "BLACK" : "WHITE";
+            winnerTitle.textContent = `PLAYER ${winner} WIN`;
+            gameEnded = true;
+
             for (let m of mark)
               document.querySelector(`#i${m[0]}${m[1]}`).classList.add("yel");
+            modalOverlay.click();
             break;
           }
         } else {
@@ -143,38 +134,63 @@ const checkWin = function (id, chess) {
     }
   }
 };
+function createBoardElement() {
+  for (let y = 0; y < boardSize; y++) {
+    for (let x = 0; x < boardSize; x++) {
+      let _cell = document.createElement("div");
+      let _id = createID(x, y);
+      _cell.classList.add("cell");
+      _cell.setAttribute("id", `i${_id[0]}${_id[1]}`);
+      _cell.setAttribute("title", _id);
 
-for (let y = 0; y < boardSize; y++) {
-  for (let x = 0; x < boardSize; x++) {
-    let _cell = document.createElement("div");
-    let _id = createID(x, y);
-    _cell.classList.add("cell");
-    _cell.setAttribute("id", `i${_id[0]}${_id[1]}`);
-    _cell.setAttribute("title", _id);
+      _cell.addEventListener("click", e => {
+        if (!gameEnded) {
+          if (!e.target.classList.contains("locked")) {
+            e.target.classList.add("locked");
+            let _piece = document.createElement("div");
+            let _value = playerBlack ? "b" : "w";
+            let _class = playerBlack ? "black" : "white";
 
-    _cell.addEventListener("click", e => {
-      if (!e.target.classList.contains("locked")) {
-        e.target.classList.add("locked");
-        let _piece = document.createElement("div");
-        let _value = playerBlack ? "b" : "w";
-        let _class = playerBlack ? "black" : "white";
+            //NOTE: ADD CHESS
+            _piece.classList.add(`${_class}`);
+            _piece.classList.add(`${_id}`);
+            _piece.classList.add("locked");
+            // _piece.classList.add("chess");
 
-        //NOTE: ADD CHESS
-        _piece.classList.add(`${_class}`);
-        _piece.classList.add(`${_id}`);
-        _piece.classList.add("locked");
-        board[y][x] = _value;
-        // console.log(_id);
-        checkWin(`${_id[0]}${_id[1]}`, _value);
+            board[y][x] = _value;
+            // console.log(_id);
+            checkWin(`${_id[0]}${_id[1]}`, _value);
 
-        //NOTE: SWITCH PLAYER
-        playerBlack = !playerBlack;
+            //NOTE: SWITCH PLAYER
+            playerBlack = !playerBlack;
 
-        e.target.appendChild(_piece);
-        // highlight(`${createID(x, y)[0]}${createID(x, y)[1]}`);
-      }
-    });
+            e.target.appendChild(_piece);
+            // highlight(`${createID(x, y)[0]}${createID(x, y)[1]}`);
+          }
+        }
+      });
 
-    boardElement.appendChild(_cell);
+      boardElement.appendChild(_cell);
+    }
   }
 }
+
+modalOverlay.addEventListener("click", e => {
+  modalContainer.classList.toggle("hidden");
+});
+
+btnAgain.addEventListener("click", e => {
+  reset();
+  modalContainer.classList.toggle("hidden");
+});
+
+function reset() {
+  board = createBoard(boardSize);
+  playerBlack = true;
+  gameEnded = false;
+  // let cell = document.querySelectorAll(".cell");
+  // for (let c of cell) c.remove();
+  boardElement.innerHTML = "";
+  createBoardElement();
+}
+reset();
